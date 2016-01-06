@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>br.com.pilovieira</groupId>
 	<artifactId>sptagcomm</artifactId>
-	<version>1.0</version>
+	<version>1.1-SNAPSHOT</version>
 	<name>Smartphone Tag Communications</name>
 	<url>http://pilovieira.com.br/projects/sptagcomm.html</url>
 	<organization>
@@ -75,7 +75,7 @@
 		<connection>scm:git:git@github.com:pilovieira/sptagcomm.git</connection>
 		<developerConnection>scm:git:git@github.com:pilovieira/sptagcomm.git</developerConnection>
 		<url>git@github.com:pilovieira/sptagcomm.git</url>
-		<tag>sptagcomm-1.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<distributionManagement>
