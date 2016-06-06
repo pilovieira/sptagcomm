@@ -1,22 +1,31 @@
 package br.com.pilovieira.sptagcomm.requisition;
 
-import br.com.pilovieira.sptagcomm.Callback;
-import br.com.pilovieira.sptagcomm.Request;
 import android.content.Context;
+import br.com.pilovieira.sptagcomm.Message;
 
-public abstract class Requisition<REQUEST extends Request> {
+public abstract class Requisition<T extends Message> {
 
 	protected Context context;
-	protected REQUEST request;
-	protected Callback callback;
+	protected T request;
+	protected Message callback;
 
-	protected void initialize(Context context, String tagMessage) {
+	void setContext(Context context) {
 		this.context = context;
 	}
 
-	Callback getCallback() {
+	@SuppressWarnings("unchecked")
+	void setMessage(Message message) {
+		this.request = (T) message;
+	}
+	
+	protected void setCallback(T callback) {
+		this.callback = callback;
+	}
+
+	Message getCallback() {
 		return callback;
 	}
 
 	protected abstract void process();
+
 }

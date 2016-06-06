@@ -3,10 +3,7 @@ package br.com.pilovieira.sptagcomm.requisition;
 import java.util.List;
 
 import android.content.Context;
-import br.com.pilovieira.sptagcomm.Callback;
 import br.com.pilovieira.sptagcomm.Message;
-import br.com.pilovieira.sptagcomm.Request;
-import br.com.pilovieira.sptagcomm.Tag;
 import br.com.pilovieira.sptagcomm.TagException;
 import br.com.pilovieira.sptagcomm.p2p.Emitter;
 
@@ -24,15 +21,13 @@ public class RequisitionProcessor {
 		this.emitters = emitters;
 	}
 	
-	public void process(Context context, String tagMessage) {
+	public void process(Context context, Message message) {
 		try {
-			Tag tag = Tag.getInstance(tagMessage);
-			Requisition<? extends Request> requisition = store.getRequisition(tag);
-			
-			requisition.initialize(context, tagMessage);
+			Requisition<? extends Message> requisition = store.getRequisition(message);
+			requisition.setContext(context);
 			requisition.process();
-			Callback callback = requisition.getCallback();
 			
+			Message callback = requisition.getCallback();
 			if (callback != null)
 				emit(callback);
 		} catch (TagException | RequisitionException ex) {

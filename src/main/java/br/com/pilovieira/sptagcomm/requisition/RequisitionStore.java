@@ -3,22 +3,22 @@ package br.com.pilovieira.sptagcomm.requisition;
 import java.util.HashMap;
 import java.util.Map;
 
-import br.com.pilovieira.sptagcomm.Request;
-import br.com.pilovieira.sptagcomm.Tag;
+import br.com.pilovieira.sptagcomm.Message;
 
 public class RequisitionStore {
 	
-	private static Map<Tag, Requisition<? extends Request>> 
-	requisitions = new HashMap<Tag, Requisition<? extends Request>>(); 
+	private static final Map<Class<? extends Message>, Class<? extends Requisition<? extends Message>>> requisitions = new HashMap<>(); 
 	
-	public static void register(Tag tag, Requisition<? extends Request> requisition) {
-		requisitions.put(tag, requisition);
+	public static void register(Class<? extends Message> message, Class<? extends Requisition<? extends Message>> requisition) {
+		requisitions.put(message, requisition);
 	}
 	
-	Requisition<? extends Request> getRequisition(Tag tag) {
-		if (requisitions.containsKey(tag))
-			return requisitions.get(tag);
+	Requisition<? extends Message> getRequisition(Message message) throws InstantiationException, IllegalAccessException {
+		if (!requisitions.containsKey(message.getClass()))
+			throw new RequisitionException("Requisition not found");
 		
-		throw new RequisitionException("Requisition not found");
+		Requisition<? extends Message> instance = requisitions.get(message.getClass()).newInstance();
+		instance.setMessage(message);
+		return instance;
 	}
 }
