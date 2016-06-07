@@ -1,7 +1,6 @@
 package br.com.pilovieira.sptagcomm.requisition;
 
 import static java.util.Arrays.asList;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -12,25 +11,26 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import android.content.Context;
-import br.com.pilovieira.sptagcomm.Callback;
-import br.com.pilovieira.sptagcomm.Status;
+import br.com.pilovieira.sptagcomm.Message;
+import br.com.pilovieira.sptagcomm.MessageImpl;
 import br.com.pilovieira.sptagcomm.p2p.Emitter;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RequisitionProcessorTest {
 	
-	private static String TAG_LOCALIZATION = Status.INSTANCE.tag();
-
+	private static final String FAIL_MESSAGE = "You Fail";
+	
+	@Mock private Message message;
 	@Mock private Emitter emitter;
 	@SuppressWarnings("rawtypes")
 	@Mock private Requisition requisition;
-	@Mock private Callback callback;
-	@Mock private RequisitionException requisitionException;
+	@Mock private Message callback;
 	@Mock private RequisitionStore store;
 	@Mock private Context context;
 
@@ -41,47 +41,52 @@ public class RequisitionProcessorTest {
 	
 	@SuppressWarnings("unchecked")
 	@Before
-	public void setUp() {
-		when(store.getRequisition(any(Status.class))).thenReturn(requisition);
-		when(requisition.getCallback()).thenReturn(callback);
+	public void setUp() throws InstantiationException, IllegalAccessException {
+		when(store.getRequisition(message)).thenReturn(requisition);
+		when(requisition.process()).thenReturn(callback);
 		
 		subject = new RequisitionProcessor(store, asList(emitter));
 	}
 
 	@Test
-	public void processRequisition() {
-		subject.process(context, TAG_LOCALIZATION);
+	public void processRequisitionWithCallback() throws InstantiationException, IllegalAccessException {
+		subject.process(context, message);
 		
-		verify(store).getRequisition(Status.INSTANCE);
+		verify(store).getRequisition(message);
+		verify(requisition).setContext(context);
+		verify(requisition).setMessage(message);
 		verify(requisition).process();
-		verify(requisition).getCallback();
 		verify(emitter).emit(callback);
-	}
-	
-	@Test
-	public void emitTagError() {
-		subject.process(context, "BATATAS");
-		
-		verify(emitter).emit(Matchers.any(ExceptionMessage.class));
 	}
 
 	@Test
-	public void emitRequisitionError() {
-		doThrow(new RequisitionException("")).when(requisition).process();
-		subject.process(context, TAG_LOCALIZATION);
+	public void processRequisitionWithoutCallback() throws InstantiationException, IllegalAccessException {
+		when(requisition.process()).thenReturn(null);
+
+		subject.process(context, message);
 		
-		verify(emitter).emit(Matchers.any(ExceptionMessage.class));
+		verify(store).getRequisition(message);
+		verify(requisition).setContext(context);
+		verify(requisition).setMessage(message);
+		verify(requisition).process();
+		verify(emitter, never()).emit(callback);
 	}
 	
 	@Test
-	public void processRequisitionWithoutCallback() {
-		when(requisition.getCallback()).thenReturn(null);
+	public void emitWhenException() throws InstantiationException, IllegalAccessException {
+		doThrow(new RuntimeException(FAIL_MESSAGE)).when(requisition).process();
+		subject.process(context, message);
 		
-		subject.process(context, TAG_LOCALIZATION);
-		
-		verify(store).getRequisition(Status.INSTANCE);
+		verify(store).getRequisition(message);
+		verify(requisition).setContext(context);
+		verify(requisition).setMessage(message);
 		verify(requisition).process();
-		verify(emitter, never()).emit(any(Callback.class));
+		verify(emitter).emit(Mockito.argThat(new ArgumentMatcher<MessageImpl>() {
+			@Override
+			public boolean matches(Object argument) {
+				return ((MessageImpl) argument).getValue().equals(FAIL_MESSAGE);
+			}
+		}));
 	}
 
 }

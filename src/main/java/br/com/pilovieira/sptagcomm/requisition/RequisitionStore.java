@@ -15,10 +15,9 @@ public class RequisitionStore {
 	
 	Requisition<? extends Message> getRequisition(Message message) throws InstantiationException, IllegalAccessException {
 		if (!requisitions.containsKey(message.getClass()))
-			throw new RequisitionException("Requisition not found");
+			throw new RuntimeException("Requisition not found");
 		
 		Requisition<? extends Message> instance = requisitions.get(message.getClass()).newInstance();
-		instance.setMessage(message);
 		return instance;
 	}
 }

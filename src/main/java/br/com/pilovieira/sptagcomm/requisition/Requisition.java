@@ -7,7 +7,6 @@ public abstract class Requisition<T extends Message> {
 
 	protected Context context;
 	protected T request;
-	protected Message callback;
 
 	void setContext(Context context) {
 		this.context = context;
@@ -18,14 +17,6 @@ public abstract class Requisition<T extends Message> {
 		this.request = (T) message;
 	}
 	
-	protected void setCallback(T callback) {
-		this.callback = callback;
-	}
-
-	Message getCallback() {
-		return callback;
-	}
-
-	protected abstract void process();
+	protected abstract Message process();
 
 }
